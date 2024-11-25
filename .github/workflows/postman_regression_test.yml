@@ -19,7 +19,7 @@ jobs:
       - name: Checkout another repo
         uses: actions/checkout@v2
         with:
-          repository: 'https://github.com/samueltin/rsa_regression_test'
+          repository: 'samueltin/rsa_regression_test'
           token: ${{ secrets.MY_PAT }}
           path: rsa_regression_test
 
