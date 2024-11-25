@@ -1,0 +1,36 @@
+name: TemplateGadget Product Regression Test
+
+on:
+  push:
+    branches:
+      - master
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  product-regression-test:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout another repo
+        uses: actions/checkout@v2
+        with:
+          repository: 'https://github.com/samueltin/rsa_regression_test'
+          token: ${{ secrets.MY_PAT }}
+          path: rsa_regression_test
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install newman
+        run: |
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
+          npm install -g newman-reporter-slackmsg
+
