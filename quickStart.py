@@ -1,15 +1,7 @@
 from langchain_community.llms import Ollama
-from dotenv import load_dotenv
-import time
-load_dotenv()
+llm = Ollama(model="llama2")
 
-llm = Ollama(model="llama3.1")
-
-# start = time.time()
-# response = llm.invoke("how can langsmith help with testing?")
-# end = time.time()
-# print("Time taken: ", end - start)
-# print(response)
+# llm.invoke("how can langsmith help with testing?")
 
 from langchain_core.prompts import ChatPromptTemplate
 prompt = ChatPromptTemplate.from_messages([
@@ -22,9 +14,7 @@ from langchain_core.output_parsers import StrOutputParser
 output_parser = StrOutputParser()
 
 # chain = prompt | llm | output_parser
-
-# response = chain.invoke({"input": "how can langsmith help with testing?"})
-# print(response)
+# chain.invoke({"input": "how can langsmith help with testing?"})
 
 from langchain_community.document_loaders import WebBaseLoader
 loader = WebBaseLoader("https://docs.smith.langchain.com/user_guide")
@@ -72,10 +62,12 @@ retrieval_chain = create_retrieval_chain(retriever, document_chain)
 # response = retrieval_chain.invoke({"input": "how can langsmith help with testing?"})
 # print(response["answer"])
 
-# LangSmith offers several features that can help with testing:...d
+# LangSmith offers several features that can help with testing:...
 
 from langchain.chains import create_history_aware_retriever
 from langchain_core.prompts import MessagesPlaceholder
+
+# First we need a prompt that we can pass into an LLM to generate this search query
 
 prompt = ChatPromptTemplate.from_messages([
     MessagesPlaceholder(variable_name="chat_history"),
@@ -87,8 +79,26 @@ retriever_chain = create_history_aware_retriever(llm, retriever, prompt)
 from langchain_core.messages import HumanMessage, AIMessage
 
 chat_history = [HumanMessage(content="Can LangSmith help test my LLM applications?"), AIMessage(content="Yes!")]
-response = retriever_chain.invoke({
+# response = retriever_chain.invoke({
+#     "chat_history": chat_history,
+#     "input": "Tell me how"
+# })
+
+# print(response)
+
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "Answer the user's questions based on the below context:\n\n{context}"),
+    MessagesPlaceholder(variable_name="chat_history"),
+    ("user", "{input}"),
+])
+document_chain = create_stuff_documents_chain(llm, prompt)
+
+retrieval_chain = create_retrieval_chain(retriever_chain, document_chain)
+
+chat_history = [HumanMessage(content="Can LangSmith help test my LLM applications?"), AIMessage(content="Yes!")]
+response = retrieval_chain.invoke({
     "chat_history": chat_history,
     "input": "Tell me how"
 })
+
 print(response)

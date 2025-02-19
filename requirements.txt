@@ -1,3 +1,10 @@
 python-dotenv
 langchain
 langchain-openai
+langchain-community
+pypdf
+langchain-core
+langgraph>0.2.27
+langchain-text-splitters
+bs4
+langchainhub
