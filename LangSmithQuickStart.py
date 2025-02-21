@@ -2,7 +2,7 @@ import getpass
 import os
 from dotenv import load_dotenv
 from langsmith.wrappers import wrap_openai
-from langsmith.wrappers.base import ModuleWrapper
+from langsmith import traceable
 
 load_dotenv()
 
@@ -11,21 +11,23 @@ if not os.getenv("AZURE_OPENAI_API_KEY"):
 
 from langchain_openai import AzureChatOpenAI
 
-llm = ModuleWrapper(AzureChatOpenAI(
+llm = AzureChatOpenAI(
     azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
     azure_deployment=os.getenv('AZURE_OPENAI_DEPLOYMENT_NAME'),
     openai_api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
-))
+)
 
 
 # This is the retriever we will use in RAG
 # This is mocked out, but it could be anything we want
+@traceable(run_type="retriever")
 def retriever(query: str):
     results = ["Harrison worked at Kensho"]
     return results
 
 # This is the end-to-end RAG chain.
 # It does a retrieval step then calls OpenAI
+@traceable
 def rag(question):
     docs = retriever(question)
     system_message = """Answer the users question using only the provided information below:

@@ -8,3 +8,5 @@ langgraph>0.2.27
 langchain-text-splitters
 bs4
 langchainhub
+langsmith 
+openai
