@@ -3,7 +3,7 @@ from langchain_community.utilities import SQLDatabase
 db = SQLDatabase.from_uri("sqlite:///Chinook.db")
 # print(db.dialect)
 # print(db.get_usable_table_names())
-result = db.run("SELECT * FROM Artist LIMIT 10;")
+# result = db.run("SELECT * FROM Artist LIMIT 10;")
 # print(result)
 
 from typing_extensions import TypedDict
@@ -92,25 +92,25 @@ def generate_answer(state: State):
 
 from langgraph.graph import START, StateGraph
 
-graph_builder = StateGraph(State).add_sequence(
-    [write_query, execute_query, generate_answer]
-)
-graph_builder.add_edge(START, "write_query")
-graph = graph_builder.compile()
+# graph_builder = StateGraph(State).add_sequence(
+#     [write_query, execute_query, generate_answer]
+# )
+# graph_builder.add_edge(START, "write_query")
+# graph = graph_builder.compile()
 
-# for step in graph.stream(
-#     {"question": "How many employees are there?"}, stream_mode="updates"
-# ):
-#     print(step)
+# # for step in graph.stream(
+# #     {"question": "How many employees are there?"}, stream_mode="updates"
+# # ):
+# #     print(step)
 
-from langgraph.checkpoint.memory import MemorySaver
+# from langgraph.checkpoint.memory import MemorySaver
 
-memory = MemorySaver()
-graph = graph_builder.compile(checkpointer=memory, interrupt_before=["execute_query"])
+# memory = MemorySaver()
+# graph = graph_builder.compile(checkpointer=memory, interrupt_before=["execute_query"])
 
-# Now that we're using persistence, we need to specify a thread ID
-# so that we can continue the run after review.
-config = {"configurable": {"thread_id": "1"}}
+# # Now that we're using persistence, we need to specify a thread ID
+# # so that we can continue the run after review.
+# config = {"configurable": {"thread_id": "1"}}
 
 # for step in graph.stream(
 #     {"question": "How many employees are there?"},
@@ -131,25 +131,25 @@ config = {"configurable": {"thread_id": "1"}}
 # else:
 #     print("Operation cancelled by user.")
 
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
+# from langchain_community.agent_toolkits import SQLDatabaseToolkit
 
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+# toolkit = SQLDatabaseToolkit(db=db, llm=llm)
 
-tools = toolkit.get_tools()
+# tools = toolkit.get_tools()
 
-from langchain import hub
+# from langchain import hub
 
-prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
+# prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
-assert len(prompt_template.messages) == 1
-# prompt_template.messages[0].pretty_print()
+# assert len(prompt_template.messages) == 1
+# # prompt_template.messages[0].pretty_print()
 
-system_message = prompt_template.format(dialect="SQLite", top_k=5)
+# system_message = prompt_template.format(dialect="SQLite", top_k=5)
 
-from langchain_core.messages import HumanMessage
-from langgraph.prebuilt import create_react_agent
+# from langchain_core.messages import HumanMessage
+# from langgraph.prebuilt import create_react_agent
 
-agent_executor = create_react_agent(llm, tools, prompt=system_message)
+# agent_executor = create_react_agent(llm, tools, prompt=system_message)
 
 # question = "Which country's customers spent the most?"
 
@@ -167,69 +167,69 @@ agent_executor = create_react_agent(llm, tools, prompt=system_message)
 # ):
 #     step["messages"][-1].pretty_print()
 
-import ast
-import re
+# import ast
+# import re
 
 
-def query_as_list(db, query):
-    res = db.run(query)
-    res = [el for sub in ast.literal_eval(res) for el in sub if el]
-    res = [re.sub(r"\b\d+\b", "", string).strip() for string in res]
-    return list(set(res))
+# def query_as_list(db, query):
+#     res = db.run(query)
+#     res = [el for sub in ast.literal_eval(res) for el in sub if el]
+#     res = [re.sub(r"\b\d+\b", "", string).strip() for string in res]
+#     return list(set(res))
 
 
-artists = query_as_list(db, "SELECT Name FROM Artist")
-albums = query_as_list(db, "SELECT Title FROM Album")
-# albums[:5]
+# artists = query_as_list(db, "SELECT Name FROM Artist")
+# albums = query_as_list(db, "SELECT Title FROM Album")
+# # albums[:5]
 
-# print(albums)
+# # print(albums)
 
-from langchain_openai import AzureOpenAIEmbeddings
+# from langchain_openai import AzureOpenAIEmbeddings
 
-embeddings = AzureOpenAIEmbeddings(
-    azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
-    azure_deployment="text-embedding-ada-002",
-    openai_api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
-)
+# embeddings = AzureOpenAIEmbeddings(
+#     azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
+#     azure_deployment="text-embedding-ada-002",
+#     openai_api_version=os.getenv('AZURE_OPENAI_API_VERSION'),
+# )
 
-from langchain_core.vectorstores import InMemoryVectorStore
+# from langchain_core.vectorstores import InMemoryVectorStore
 
-vector_store = InMemoryVectorStore(embeddings)
+# vector_store = InMemoryVectorStore(embeddings)
 
-from langchain.agents.agent_toolkits import create_retriever_tool
+# from langchain.agents.agent_toolkits import create_retriever_tool
 
-_ = vector_store.add_texts(artists + albums)
-retriever = vector_store.as_retriever(search_kwargs={"k": 5})
-description = (
-    "Use to look up values to filter on. Input is an approximate spelling "
-    "of the proper noun, output is valid proper nouns. Use the noun most "
-    "similar to the search."
-)
-retriever_tool = create_retriever_tool(
-    retriever,
-    name="search_proper_nouns",
-    description=description,
-)
+# _ = vector_store.add_texts(artists + albums)
+# retriever = vector_store.as_retriever(search_kwargs={"k": 5})
+# description = (
+#     "Use to look up values to filter on. Input is an approximate spelling "
+#     "of the proper noun, output is valid proper nouns. Use the noun most "
+#     "similar to the search."
+# )
+# retriever_tool = create_retriever_tool(
+#     retriever,
+#     name="search_proper_nouns",
+#     description=description,
+# )
 
-print(retriever_tool.invoke("Alice Chains"))
+# print(retriever_tool.invoke("Alice Chains"))
 
-# Add to system message
-suffix = (
-    "If you need to filter on a proper noun like a Name, you must ALWAYS first look up "
-    "the filter value using the 'search_proper_nouns' tool! Do not try to "
-    "guess at the proper name - use this function to find similar ones."
-)
+# # Add to system message
+# suffix = (
+#     "If you need to filter on a proper noun like a Name, you must ALWAYS first look up "
+#     "the filter value using the 'search_proper_nouns' tool! Do not try to "
+#     "guess at the proper name - use this function to find similar ones."
+# )
 
-system = f"{system_message}\n\n{suffix}"
+# system = f"{system_message}\n\n{suffix}"
 
-tools.append(retriever_tool)
+# tools.append(retriever_tool)
 
-agent = create_react_agent(llm, tools, prompt=system)
+# agent = create_react_agent(llm, tools, prompt=system)
 
-question = "How many albums does alis in chain have?"
+# question = "How many albums does alis in chain have?"
 
-for step in agent.stream(
-    {"messages": [{"role": "user", "content": question}]},
-    stream_mode="values",
-):
-    step["messages"][-1].pretty_print()
+# for step in agent.stream(
+#     {"messages": [{"role": "user", "content": question}]},
+#     stream_mode="values",
+# ):
+#     step["messages"][-1].pretty_print()
